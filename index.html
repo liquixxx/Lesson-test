@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Части растения — ЦОР, окружающий мир, 1 класс</title>
+<!--
+  Цифровой образовательный ресурс (ЦОР)
+  Окружающий мир, 1 класс, УМК «Школа России» (А. А. Плешаков)
+  Тема: «Что общего у разных растений? Части растения»
+
+  Один файл, работает офлайн. Все картинки нарисованы в SVG прямо в коде.
+  Сцена всегда 1600×900 (16:9) и масштабируется под экран.
+
+  Управление учителя:
+    ← / →        — назад / далее
+    T (или Е)    — панель учителя (переход на любой экран);
+                   её же можно открыть нажатием на номер экрана внизу
+    F            — во весь экран
+-->
+<style>
+  /* ---------- Палитра (в стиле приложенного видео) ---------- */
+  :root{
+    --bg:#ece6da;      /* кремовый фон */
+    --paper:#f8f4ec;   /* карточки */
+    --ink:#23232a;     /* контур и текст */
+    --gray:#7d776d;
+    --orange:#d9703a;
+    --red:#c9483b;
+    --blue:#47698c;
+    --green:#2f7d4f;
+    --leaf:#6db35e;
+    --yellow:#f2c14e;
+    --soil:#a8774f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#cfc7b8;
+    font-family:"Segoe UI","Trebuchet MS","Helvetica Neue",Arial,sans-serif;color:var(--ink);
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  body{touch-action:none}
+
+  /* Сцена 1600×900, масштабируется скриптом */
+  #stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;overflow:hidden;
+    transform-origin:center center;
+    background:radial-gradient(ellipse at 50% 40%,#f3eee5 0%,#e9e2d5 70%,#e2dacb 100%)}
+
+  .screen{position:absolute;left:0;top:0;width:1600px;height:790px;display:none}
+  .screen.active{display:block;animation:screenIn .45s ease}
+  @keyframes screenIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  .abs{position:absolute}
+
+  /* ---------- Шапка экрана ---------- */
+  .head{position:absolute;left:36px;right:36px;top:14px;height:86px;display:flex;align-items:center;gap:22px;z-index:5}
+  .pill{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--ink);border-radius:999px;
+    padding:6px 20px;background:var(--paper);font-weight:800;font-size:28px;white-space:nowrap}
+  .pill.dark{background:var(--ink);color:#fff}
+  .pill.green{background:var(--green);color:#fff}
+  h2.title{margin:0;font-size:50px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;line-height:1;white-space:nowrap}
+  .o{color:var(--orange)}
+  .tools{margin-left:auto;display:flex;gap:14px;align-items:center}
+
+  /* ---------- Кнопки ---------- */
+  .btn{min-height:80px;min-width:80px;padding:0 26px;font:inherit;font-size:30px;font-weight:800;color:var(--ink);
+    border:4px solid var(--ink);border-radius:22px;background:var(--paper);box-shadow:0 6px 0 var(--ink);
+    display:inline-flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;touch-action:manipulation;
+    transition:transform .08s,box-shadow .08s,background .2s}
+  .btn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+  .btn svg{width:36px;height:36px;flex:none}
+  .btn.primary{background:var(--orange);color:#fff}
+  .btn.green{background:var(--green);color:#fff}
+  .btn.small{font-size:28px;padding:0 20px;white-space:nowrap}
+  .btn.off{opacity:.45}
+  .btn[hidden]{display:none}
+  .glow{animation:glow 1.3s ease-in-out infinite}
+  @keyframes glow{0%,100%{box-shadow:0 6px 0 var(--ink),0 0 0 0 rgba(217,112,58,.0)}50%{box-shadow:0 6px 0 var(--ink),0 0 0 14px rgba(217,112,58,.45)}}
+
+  /* ---------- Нижняя панель навигации ---------- */
+  #nav{position:absolute;left:0;bottom:0;width:1600px;height:110px;background:var(--paper);border-top:4px solid var(--ink);
+    display:flex;align-items:center;gap:16px;padding:0 30px;z-index:20}
+  #nav .center{margin:0 auto;display:flex;align-items:center;gap:18px}
+  #counter{min-width:150px;height:80px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;
+    border:4px solid var(--ink);border-radius:999px;background:var(--bg);cursor:pointer}
+
+  /* ---------- Пузырь реплики персонажа ---------- */
+  .bubble{position:absolute;background:var(--paper);border:4px solid var(--ink);border-radius:28px;padding:20px 28px;
+    font-size:34px;font-weight:700;line-height:1.25;z-index:4}
+  .bubble::before,.bubble::after{content:"";position:absolute;width:0;height:0;border-style:solid}
+  /* хвостик слева */
+  .bubble.tl::before{left:-30px;top:40px;border-width:16px 30px 16px 0;border-color:transparent var(--ink) transparent transparent}
+  .bubble.tl::after{left:-22px;top:43px;border-width:13px 25px 13px 0;border-color:transparent var(--paper) transparent transparent}
+  /* хвостик снизу */
+  .bubble.tb::before{left:60px;bottom:-30px;border-width:30px 16px 0 16px;border-color:var(--ink) transparent transparent transparent}
+  .bubble.tb::after{left:63px;bottom:-22px;border-width:25px 13px 0 13px;border-color:var(--paper) transparent transparent transparent}
+  .bubble b{color:var(--orange)}
+  .pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+
+  /* ---------- Персонаж Ростик ---------- */
+  .mascot{position:absolute;z-index:3;pointer-events:none}
+  .mascot svg{width:100%;height:100%;overflow:visible}
+  .mascot .bob{animation:bob 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:bottom center}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .mascot .wave{animation:wave 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 0%}
+  @keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-16deg)}}
+  .mascot .sprout{animation:sway 2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+  @keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  .mascot.jump .bob{animation:jump .7s ease-in-out infinite}
+  @keyframes jump{0%,100%{transform:translateY(0)}40%{transform:translateY(-34px)}}
+
+  /* ---------- Растение (SVG) ---------- */
+  .plant{position:absolute;overflow:visible}
+  .plant .part{cursor:pointer;transform-box:fill-box;transform-origin:center;transition:transform .3s,filter .3s}
+  .plant.interactive .part:hover{filter:drop-shadow(0 0 6px #ffcf3f) drop-shadow(0 0 3px #ffcf3f)}
+  .plant .part.opened{filter:drop-shadow(0 0 3px rgba(47,125,79,.9))}
+  .plant .part.active{transform:scale(1.07);filter:drop-shadow(0 0 10px #ffcf3f) drop-shadow(0 0 5px #ffcf3f)}
+  .plant .part.hint{animation:hintPulse .9s ease-in-out 3}
+  @keyframes hintPulse{50%{filter:drop-shadow(0 0 14px #ff8a3f) drop-shadow(0 0 6px #ff8a3f);transform:scale(1.06)}}
+  .plant.static .part{cursor:default;pointer-events:none}
+  .spin{animation:spin 6s linear infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .beam{stroke-dasharray:14 12;animation:beam .6s linear infinite}
+  @keyframes beam{to{stroke-dashoffset:-26}}
+
+  /* ---------- Карточки ---------- */
+  .card{position:absolute;border:4px solid var(--ink);border-radius:20px;background:var(--paper);
+    box-shadow:0 6px 0 var(--ink);display:flex;align-items:center;justify-content:center;
+    font-size:36px;font-weight:900;cursor:grab;touch-action:none;z-index:8}
+  .card.dragging{cursor:grabbing;z-index:50;transform:scale(1.08) rotate(-2deg);box-shadow:0 14px 18px rgba(0,0,0,.25)}
+  .card.back{transition:left .5s cubic-bezier(.3,1.35,.5,1),top .5s cubic-bezier(.3,1.35,.5,1)}
+  .card.shake{animation:shake .45s}
+  @keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+  .card.done{cursor:default;background:#e3f1e2;border-color:var(--green);box-shadow:0 4px 0 var(--green);z-index:7}
+  .card.hint{animation:hintCard .8s ease-in-out 3}
+  @keyframes hintCard{50%{transform:scale(1.1);box-shadow:0 6px 0 var(--ink),0 0 0 12px rgba(255,180,60,.6)}}
+
+  /* Зоны подписей */
+  .zone{position:absolute;border:4px dashed var(--gray);border-radius:20px;background:rgba(255,255,255,.45);
+    display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:var(--gray)}
+  .zone.over{border-color:var(--orange);background:rgba(255,220,180,.6)}
+  .zone.filled{border:4px solid var(--ink);background:var(--green);color:#fff;box-shadow:0 5px 0 var(--ink);font-size:36px;gap:10px}
+  .zone.filled svg{width:34px;height:34px}
+  .zone.label{border:4px solid var(--ink);color:#fff;box-shadow:0 5px 0 var(--ink);font-size:36px}
+  .zone.hint{animation:hintCard .8s ease-in-out 3}
+
+  /* Корзины */
+  .basket{position:absolute;border:4px solid var(--ink);border-radius:26px 26px 40px 40px;overflow:hidden;
+    background:repeating-linear-gradient(0deg,#d9a86a 0 18px,#c48f52 18px 22px),#d9a86a;box-shadow:0 7px 0 var(--ink)}
+  .basket .bhead{height:80px;display:flex;align-items:center;justify-content:center;gap:12px;color:#fff;
+    font-size:38px;font-weight:900;text-transform:uppercase;border-bottom:4px solid var(--ink)}
+  .basket .bhead svg{width:52px;height:52px}
+  .basket.over{outline:8px solid var(--orange);outline-offset:-4px}
+  .basket.hint{animation:hintCard .8s ease-in-out 3}
+  .basket .weave{position:absolute;left:0;right:0;bottom:0;height:90px;border-top:4px solid var(--ink);
+    background:repeating-linear-gradient(90deg,#b5793d 0 26px,#9c6530 26px 30px)}
+
+  .food{flex-direction:column;gap:0;font-size:30px;width:170px;height:166px;padding-top:4px}
+  .food svg{width:136px;height:104px}
+
+  /* Карточки-примеры (экран 1) */
+  .pcard{position:absolute;background:var(--paper);border:4px solid var(--ink);border-radius:26px;box-shadow:0 7px 0 var(--ink);overflow:hidden}
+  .pcard .lbl{position:absolute;left:0;right:0;bottom:12px;text-align:center}
+  .roots path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.6s ease}
+  .revealed .roots path{stroke-dashoffset:0}
+  .qmark{transition:opacity .5s}
+  .revealed .qmark{opacity:0}
+
+  /* Карточка с объяснением (экран 2) */
+  .info{position:absolute;background:var(--paper);border:4px solid var(--ink);border-radius:28px;box-shadow:0 7px 0 var(--ink);padding:26px 30px;display:flex;gap:24px;align-items:center}
+  .info .name{font-size:76px;font-weight:900;text-transform:uppercase;line-height:1}
+  .info .txt{font-size:36px;font-weight:700;line-height:1.3;margin-top:16px}
+  .info svg.mini{width:250px;height:210px;flex:none}
+  .chips{position:absolute;display:flex;gap:10px}
+  .chip{height:60px;padding:0 14px;border:3px solid var(--ink);border-radius:999px;display:flex;align-items:center;
+    font-size:28px;font-weight:800;background:#ddd6c8;color:#9a9388;transition:background .3s,color .3s}
+  .chip.on{color:#fff}
+
+  /* Список ошибок (экран 6) */
+  .errs{position:absolute;display:flex;flex-direction:column;gap:14px}
+  .err{min-height:84px;border:4px dashed var(--gray);border-radius:20px;display:flex;align-items:center;gap:16px;padding:10px 20px;
+    font-size:30px;font-weight:700;color:var(--gray);background:rgba(255,255,255,.4)}
+  .err .num{width:54px;height:54px;flex:none;border-radius:50%;border:4px solid var(--gray);display:flex;align-items:center;justify-content:center;font-weight:900}
+  .err.found{border:4px solid var(--ink);background:var(--paper);color:var(--ink);box-shadow:0 5px 0 var(--ink)}
+  .err.found .num{background:var(--green);border-color:var(--ink);color:#fff}
+
+  /* Всплывающее сообщение */
+  #toast{position:absolute;left:50%;bottom:10px;min-height:90px;transform:translateX(-50%) translateY(20px);z-index:60;width:max-content;max-width:1180px;
+    background:var(--paper);border:4px solid var(--ink);border-radius:24px;box-shadow:0 7px 0 var(--ink);
+    padding:16px 30px;font-size:34px;font-weight:800;display:flex;align-items:center;gap:16px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.ok{background:#e3f1e2;border-color:var(--green);box-shadow:0 7px 0 var(--green)}
+  #toast.no{background:#fdf0e3}
+  #toast svg{width:46px;height:46px;flex:none}
+
+  /* Панель учителя */
+  #teacher{position:absolute;inset:0;background:rgba(35,35,42,.55);z-index:100;display:none;align-items:center;justify-content:center}
+  #teacher.show{display:flex}
+  #teacher .box{background:var(--paper);border:4px solid var(--ink);border-radius:30px;padding:30px 36px;width:1100px;box-shadow:0 10px 0 var(--ink)}
+  #teacher h3{margin:0 0 20px;font-size:40px}
+  #teacher .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  #teacher .btn{justify-content:flex-start;font-size:28px}
+
+  #confetti{position:absolute;left:0;top:0;width:1600px;height:900px;pointer-events:none;z-index:90}
+
+  /* Итоги */
+  .stats{position:absolute;background:var(--paper);border:4px solid var(--ink);border-radius:28px;box-shadow:0 7px 0 var(--ink);padding:24px 30px}
+  .stats .row{display:flex;align-items:center;gap:16px;font-size:32px;font-weight:800;margin:10px 0}
+  .stats .ico{width:52px;height:52px;flex:none;border-radius:50%;border:4px solid var(--ink);display:flex;align-items:center;justify-content:center}
+  .stats .ico.yes{background:var(--green)}
+  .stats .ico.no{background:#ddd6c8}
+  .stats .ico svg{width:30px;height:30px}
+  .bigscore{font-size:46px;font-weight:900;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ===================== ЭКРАН 0. ТИТУЛЬНЫЙ ===================== -->
+  <section class="screen" id="s0" data-name="Титульный экран">
+    <svg class="abs" style="left:0;top:640px" width="1600" height="150" viewBox="0 0 1600 150">
+      <path d="M0 60 Q200 20 420 55 T860 45 T1280 50 T1600 40 V150 H0Z" fill="#cfe0b0" stroke="#23232a" stroke-width="4"/>
+      <path d="M0 95 Q260 70 560 92 T1100 88 T1600 85 V150 H0Z" fill="#b6d18f"/>
+    </svg>
+    <div class="pill abs" style="left:80px;top:60px">Окружающий мир · 1 класс</div>
+    <h1 class="abs" style="left:80px;top:120px;margin:0;font-size:92px;font-weight:900;line-height:1.04;text-transform:uppercase">
+      Что общего<br>у <span class="o">разных</span><br><span class="o">растений?</span></h1>
+    <div class="pill dark abs" style="left:80px;top:440px;font-size:40px;padding:10px 28px">Части растения</div>
+    <button class="btn primary abs glow" style="left:80px;top:560px;height:110px;font-size:46px;padding:0 50px" onclick="go(1)">
+      Начинаем!
+      <svg viewBox="0 0 40 40"><path d="M12 6 L30 20 L12 34Z" fill="#fff"/></svg>
+    </button>
+    <div class="plant abs" id="titlePlant" style="left:1170px;top:110px;width:380px;height:520px"></div>
+    <div class="mascot" id="titleMascot" style="left:880px;top:330px;width:260px;height:390px"></div>
+    <div class="bubble tb pop" style="left:770px;top:120px;width:420px">Привет! Я <b>Ростик</b>.<br>Давай узнаем, из чего состоит растение!</div>
+  </section>
+
+  <!-- ===================== ЭКРАН 1. ЗАГАДКА ===================== -->
+  <section class="screen" id="s1" data-name="1. Чем похожи растения?">
+    <div class="head">
+      <div class="pill dark">Этап 1</div>
+      <h2 class="title">Чем они <span class="o">похожи?</span></h2>
+    </div>
+    <div id="riddleCards"></div>
+    <div class="mascot" id="riddleMascot" style="left:50px;top:560px;width:140px;height:210px"></div>
+    <div class="bubble tl" id="riddleBubble" style="left:220px;top:575px;width:960px;min-height:150px">
+      Посмотри: дерево, кустарник, цветок и трава. Они такие разные!<br><b>Что есть у каждого из них?</b></div>
+    <button class="btn primary abs glow" id="riddleBtn" style="left:1220px;top:620px;height:100px;font-size:40px;width:330px">Проверим!</button>
+  </section>
+
+  <!-- ===================== ЭКРАН 2. ЧАСТИ РАСТЕНИЯ (исследование) ===================== -->
+  <section class="screen" id="s2" data-name="2. Изучаем части растения">
+    <div class="head">
+      <div class="pill dark">Этап 1</div>
+      <h2 class="title">Изучаем <span class="o">растение</span></h2>
+      <div class="tools">
+        <div class="pill green" id="exploreCount">Открыто 0 из 6</div>
+        <button class="btn small" onclick="hint()">💡 Подсказка</button>
+        <button class="btn small" onclick="resetTask()" title="Сбросить задание">
+          <svg viewBox="0 0 40 40"><path d="M30 12 A13 13 0 1 0 33 24" fill="none" stroke="#23232a" stroke-width="5" stroke-linecap="round"/><path d="M24 4 L33 12 L23 17Z" fill="#23232a"/></svg></button>
+      </div>
+    </div>
+    <div class="layer"></div>
+  </section>
+
+  <!-- ===================== ЭКРАН 3. ОПОРНАЯ СХЕМА ===================== -->
+  <section class="screen" id="s3" data-name="3. Опорная схема">
+    <div class="head">
+      <div class="pill dark">Этап 1</div>
+      <h2 class="title">Запомним: <span class="o">части растения</span></h2>
+    </div>
+    <div class="layer"></div>
+  </section>
+
+  <!-- ===================== ЭКРАН 4. ПОДПИШИ РАСТЕНИЕ ===================== -->
+  <section class="screen" id="s4" data-name="4. Подпиши растение">
+    <div class="head">
+      <div class="pill dark">Этап 2</div>
+      <h2 class="title">Подпиши <span class="o">растение</span></h2>
+      <div class="tools">
+        <div class="pill green" id="labelCount">0 из 6</div>
+        <button class="btn small" onclick="hint()">💡 Подсказка</button>
+        <button class="btn small" onclick="resetTask()" title="Сбросить задание">
+          <svg viewBox="0 0 40 40"><path d="M30 12 A13 13 0 1 0 33 24" fill="none" stroke="#23232a" stroke-width="5" stroke-linecap="round"/><path d="M24 4 L33 12 L23 17Z" fill="#23232a"/></svg></button>
+      </div>
+    </div>
+    <div class="layer"></div>
+  </section>
+
+  <!-- ===================== ЭКРАН 5. ЧТО МЫ ЕДИМ? ===================== -->
+  <section class="screen" id="s5" data-name="5. Что мы едим?">
+    <div class="head">
+      <div class="pill dark">Этап 2</div>
+      <h2 class="title">Что мы <span class="o">едим?</span></h2>
+      <div class="tools">
+        <div class="pill green" id="eatCount">0 из 8</div>
+        <button class="btn small" onclick="hint()">💡 Подсказка</button>
+        <button class="btn small" onclick="resetTask()" title="Сбросить задание">
+          <svg viewBox="0 0 40 40"><path d="M30 12 A13 13 0 1 0 33 24" fill="none" stroke="#23232a" stroke-width="5" stroke-linecap="round"/><path d="M24 4 L33 12 L23 17Z" fill="#23232a"/></svg></button>
+      </div>
+    </div>
+    <div class="layer"></div>
+  </section>
+
+  <!-- ===================== ЭКРАН 6. НАЙДИ ОШИБКУ ===================== -->
+  <section class="screen" id="s6" data-name="6. Найди ошибку">
+    <div class="head">
+      <div class="pill dark">Этап 2</div>
+      <h2 class="title">Найди <span class="o">ошибки</span></h2>
+      <div class="tools">
+        <div class="pill green" id="errCount">Найдено 0 из 3</div>
+        <button class="btn small" onclick="hint()">💡 Подсказка</button>
+        <button class="btn small" onclick="resetTask()" title="Сбросить задание">
+          <svg viewBox="0 0 40 40"><path d="M30 12 A13 13 0 1 0 33 24" fill="none" stroke="#23232a" stroke-width="5" stroke-linecap="round"/><path d="M24 4 L33 12 L23 17Z" fill="#23232a"/></svg></button>
+      </div>
+    </div>
+    <div class="layer"></div>
+  </section>
+
+  <!-- ===================== ЭКРАН 7. ФИНАЛ ===================== -->
+  <section class="screen" id="s7" data-name="Финал">
+    <svg class="abs" style="left:0;top:660px" width="1600" height="130" viewBox="0 0 1600 130">
+      <path d="M0 50 Q200 15 420 45 T860 38 T1280 42 T1600 30 V130 H0Z" fill="#cfe0b0" stroke="#23232a" stroke-width="4"/>
+    </svg>
+    <h1 class="abs" style="left:80px;top:50px;margin:0;font-size:120px;font-weight:900;text-transform:uppercase;line-height:1">
+      <span class="o">Молодцы!</span></h1>
+    <div class="mascot jump" id="finalMascot" style="left:150px;top:300px;width:240px;height:360px"></div>
+    <div class="bubble tl pop" style="left:420px;top:330px;width:500px">Вы настоящие <b>знатоки растений!</b> Спасибо за урок!</div>
+    <div class="stats" id="stats" style="left:990px;top:60px;width:560px"></div>
+    <button class="btn primary abs glow" style="left:990px;top:560px;height:100px;font-size:40px;width:560px" onclick="restartAll()">
+      <svg viewBox="0 0 40 40"><path d="M30 12 A13 13 0 1 0 33 24" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M24 4 L33 12 L23 17Z" fill="#fff"/></svg>
+      Сыграть ещё раз</button>
+  </section>
+
+  <!-- ===================== Навигация ===================== -->
+  <nav id="nav">
+    <button class="btn small" onclick="restartAll()" title="Начать заново">
+      <svg viewBox="0 0 40 40"><path d="M30 12 A13 13 0 1 0 33 24" fill="none" stroke="#23232a" stroke-width="5" stroke-linecap="round"/><path d="M24 4 L33 12 L23 17Z" fill="#23232a"/></svg>
+      Начать заново</button>
+    <button class="btn small" id="soundBtn" onclick="toggleSound()"></button>
+    <div class="center">
+      <button class="btn" id="prevBtn" onclick="go(cur-1)">
+        <svg viewBox="0 0 40 40"><path d="M28 6 L10 20 L28 34Z" fill="#23232a"/></svg>Назад</button>
+      <div id="counter" title="Панель учителя (T)" onclick="toggleTeacher()">1 / 8</div>
+      <button class="btn primary" id="nextBtn" onclick="go(cur+1)">Далее
+        <svg viewBox="0 0 40 40"><path d="M12 6 L30 20 L12 34Z" fill="#fff"/></svg></button>
+    </div>
+    <button class="btn small" onclick="toggleFullscreen()" title="Во весь экран">
+      <svg viewBox="0 0 40 40" fill="none" stroke="#23232a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 14 V5 H14 M26 5 H35 V14 M35 26 V35 H26 M14 35 H5 V26"/></svg>
+      Во весь экран</button>
+  </nav>
+
+  <div id="toast"></div>
+  <canvas id="confetti" width="1600" height="900"></canvas>
+
+  <!-- Панель учителя (клавиша T) -->
+  <div id="teacher" onclick="if(event.target===this)toggleTeacher()">
+    <div class="box">
+      <h3>Панель учителя — перейти к экрану</h3>
+      <div class="grid" id="teacherGrid"></div>
+      <div style="margin-top:20px;display:flex;justify-content:flex-end">
+        <button class="btn small" onclick="toggleTeacher()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   1. ДАННЫЕ
+   ===================================================================== */
+const INK = '#23232a';
+
+// Части растения: название, цвет подписи, объяснение, подсказка
+const PARTS = {
+  root:   {name:'Корень',  color:'#8a5a32', text:'Корень держит растение в земле и пьёт из неё воду.',
+           hint:'Корень прячется под землёй.'},
+  stem:   {name:'Стебель', color:'#2f6f45', text:'Стебель держит листья и цветки. По нему вода бежит от корня к листьям.',
+           hint:'Стебель — это «ножка» растения, на нём держатся листья.'},
+  leaf:   {name:'Лист',    color:'#3f7f35', text:'Лист ловит солнечный свет и «кормит» всё растение.',
+           hint:'Листья зелёные и плоские.'},
+  flower: {name:'Цветок',  color:'#b8600c', text:'Цветок нужен, чтобы появился плод.',
+           hint:'Цветок жёлтый, он на самой верхушке.'},
+  fruit:  {name:'Плод',    color:'#c9483b', text:'Плод вырастает из цветка. Внутри плода прячутся семена.',
+           hint:'Плод — это целый красный помидор.'},
+  seeds:  {name:'Семена',  color:'#47698c', text:'Из семени вырастет новое растение.',
+           hint:'Семена — маленькие зёрнышки внутри разрезанного плода.'}
+};
+const PART_ORDER = ['root','stem','leaf','flower','fruit','seeds'];
+
+// Задание «Что мы едим?» (только ботанически однозначные примеры)
+const FOODS = [
+  {id:'carrot',   name:'Морковь', basket:'root',  hint:'Где растёт морковь — над землёй или в земле?'},
+  {id:'beet',     name:'Свёкла',  basket:'root',  hint:'Свёклу выкапывают из земли. Какая часть растения в земле?'},
+  {id:'lettuce',  name:'Салат',   basket:'leaf',  hint:'Салат зелёный и плоский. На что он похож?'},
+  {id:'cabbage',  name:'Капуста', basket:'leaf',  hint:'Кочан капусты — это много-много…'},
+  {id:'apple',    name:'Яблоко',  basket:'fruit', hint:'Яблоко появилось из цветка. Как это называется?'},
+  {id:'cucumber', name:'Огурец',  basket:'fruit', hint:'Огурец вырос из цветка, а внутри у него семена.'},
+  {id:'sunseeds', name:'Семечки', basket:'seeds', hint:'Посади семечку — вырастет новый подсолнух!'},
+  {id:'peas',     name:'Горох',   basket:'seeds', hint:'Посади горошину — вырастет новый горох!'}
+];
+const BASKETS = ['root','leaf','fruit','seeds'];
+
+// Ошибки на «перепутанном» растении
+const MISTAKES = {
+  flower: 'Цветок не растёт под землёй! Он раскрывается наверху, на свету.',
+  root:   'Корень должен быть в земле: он держит растение и пьёт воду.',
+  leaves: 'Под землёй листья не увидят солнца. Листья растут над землёй.'
+};
+const MISTAKE_TITLES = {flower:'Цветок под землёй', root:'Корень наверху', leaves:'Листья под землёй'};
+
+// Состояние выполнения заданий (для финального экрана)
+const done = {explore:false, label:false, eat:false, mistakes:false};
+const TASK_NAMES = {explore:'Изучили части растения', label:'Подписали растение', eat:'Что мы едим?', mistakes:'Нашли ошибки'};
+
+/* =====================================================================
+   2. МАСШТАБ СЦЕНЫ 16:9
+   ===================================================================== */
+const stage = document.getElementById('stage');
+let scale = 1;
+function fit(){
+  scale = Math.min(innerWidth/1600, innerHeight/900);
+  stage.style.transform = `translate(-50%,-50%) scale(${scale})`;
+}
+addEventListener('resize', fit); fit();
+
+// Перевод координат указателя в координаты сцены (1600×900)
+function toStage(e){
+  const r = stage.getBoundingClientRect();
+  return {x:(e.clientX - r.left)/scale, y:(e.clientY - r.top)/scale};
+}
+
+/* =====================================================================
+   3. ЗВУКИ (Web Audio API, без файлов)
+   ===================================================================== */
+let soundOn = true, actx = null;
+function tone(freq, dur, type='sine', delay=0, vol=0.18){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state==='suspended') actx.resume();
+    const t = actx.currentTime + delay;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+0.05);
+  }catch(err){}
+}
+const sfx = {
+  click(){ tone(600,.08,'triangle',0,.12) },
+  ok(){ tone(660,.14,'sine'); tone(880,.22,'sine',.11) },
+  no(){ tone(300,.18,'triangle',0,.14); tone(240,.25,'triangle',.12,.12) },
+  open(){ tone(520,.1,'sine'); tone(780,.16,'sine',.08) },
+  win(){ [523,659,784,1047].forEach((f,i)=>tone(f,.28,'sine',i*.13,.2)) }
+};
+function toggleSound(){ soundOn = !soundOn; drawSoundBtn(); if(soundOn) sfx.click(); }
+function drawSoundBtn(){
+  const b = document.getElementById('soundBtn');
+  b.innerHTML = `<svg viewBox="0 0 40 40"><path d="M6 15 H13 L22 7 V33 L13 25 H6Z" fill="#23232a"/>${
+    soundOn ? '<path d="M27 13 Q32 20 27 27 M31 9 Q39 20 31 31" fill="none" stroke="#23232a" stroke-width="4" stroke-linecap="round"/>'
+            : '<path d="M27 14 L37 26 M37 14 L27 26" stroke="#c9483b" stroke-width="5" stroke-linecap="round"/>'}</svg>Звук`;
+  b.classList.toggle('off', !soundOn);
+}
+
+/* =====================================================================
+   4. РИСУНКИ (SVG)
+   ===================================================================== */
+
+// Персонаж Ростик: человечек в стиле видео + росток на голове.
+// mood: 'happy' | 'talk' | 'wave' | 'point'
+function mascotSVG(mood='happy'){
+  const mouth = mood==='talk'
+    ? '<ellipse cx="100" cy="106" rx="9" ry="7" fill="#23232a"/>'
+    : '<path d="M86 102 Q100 116 114 102" fill="none" stroke="#23232a" stroke-width="4" stroke-linecap="round"/>';
+  const rightArm = (mood==='wave'||mood==='point')
+    ? `<g class="${mood==='wave'?'wave':''}"><path d="M128 138 L162 96" stroke="#23232a" stroke-width="7" stroke-linecap="round"/><circle cx="164" cy="92" r="8" fill="#fff" stroke="#23232a" stroke-width="4"/></g>`
+    : `<path d="M128 138 L146 196" stroke="#23232a" stroke-width="7" stroke-linecap="round"/><circle cx="147" cy="200" r="8" fill="#fff" stroke="#23232a" stroke-width="4"/>`;
+  return `<svg viewBox="0 0 200 300"><g class="bob">
+    <g class="sprout">
+      <path d="M100 44 Q97 26 101 10" fill="none" stroke="#23232a" stroke-width="8" stroke-linecap="round"/>
+      <path d="M100 44 Q97 26 101 10" fill="none" stroke="#5fa35a" stroke-width="4" stroke-linecap="round"/>
+      <path d="M101 18 Q118 0 138 8 Q122 30 101 18Z" fill="#6db35e" stroke="#23232a" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M99 24 Q80 6 62 16 Q78 36 99 24Z" fill="#6db35e" stroke="#23232a" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+    <!-- ножки -->
+    <path d="M90 206 L88 272 M110 206 L112 272" stroke="#23232a" stroke-width="8" stroke-linecap="round"/>
+    <ellipse cx="84" cy="276" rx="13" ry="7" fill="#23232a"/><ellipse cx="116" cy="276" rx="13" ry="7" fill="#23232a"/>
+    <!-- кофта -->
+    <path d="M100 120 L100 130" stroke="#23232a" stroke-width="6"/>
+    <path d="M72 132 Q100 124 128 132 L134 208 L66 208Z" fill="#5fa35a" stroke="#23232a" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M84 134 L84 206 M116 134 L116 206" stroke="#d9703a" stroke-width="6"/>
+    <path d="M72 138 L54 196" stroke="#23232a" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="53" cy="200" r="8" fill="#fff" stroke="#23232a" stroke-width="4"/>
+    ${rightArm}
+    <!-- голова -->
+    <circle cx="100" cy="84" r="42" fill="#fff" stroke="#23232a" stroke-width="4"/>
+    <path d="M58 84 Q56 40 100 40 Q144 40 142 84 Q132 66 116 68 Q100 64 84 68 Q68 66 58 84Z" fill="#23232a"/>
+    <circle cx="86" cy="90" r="5" fill="#23232a"/><circle cx="114" cy="90" r="5" fill="#23232a"/>
+    <ellipse cx="74" cy="102" rx="7" ry="4" fill="#f4b6a4" opacity=".8"/><ellipse cx="126" cy="102" rx="7" ry="4" fill="#f4b6a4" opacity=".8"/>
+    ${mouth}
+  </g></svg>`;
+}
+function putMascot(el, mood){ el.innerHTML = mascotSVG(mood); }
+
+// Лист: заострённый овал от основания (x1,y1) к кончику (x2,y2)
+function leafPath(x1,y1,x2,y2,w){
+  const mx=(x1+x2)/2, my=(y1+y2)/2, dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy);
+  const px=-dy/L*w, py=dx/L*w;
+  return `M${x1} ${y1} Q${mx+px} ${my+py} ${x2} ${y2} Q${mx-px} ${my-py} ${x1} ${y1}Z`;
+}
+function leafSVG(x1,y1,x2,y2,w=52){
+  const ex = x1+(x2-x1)*.8, ey = y1+(y2-y1)*.8;
+  return `<path d="${leafPath(x1,y1,x2,y2,w)}" fill="#6db35e" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M${x1} ${y1} L${ex} ${ey}" stroke="#3e7d43" stroke-width="3.5" stroke-linecap="round"/>`;
+}
+// Двойная линия: чёрный контур + цветная заливка (как в видео)
+function line2(d, color, w){
+  return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w+7}" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="${d}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+// Невидимая толстая линия — увеличивает область нажатия у тонких частей
+function hitLine(d, w=44){
+  return `<path d="${d}" fill="none" stroke="#000" stroke-opacity="0" stroke-width="${w}" stroke-linecap="round" pointer-events="stroke"/>`;
+}
+function flowerSVG(cx,cy,sc=1){
+  let p='';
+  for(let i=0;i<6;i++) p+=`<ellipse cx="0" cy="-33" rx="19" ry="30" transform="rotate(${i*60})" fill="#f2c14e" stroke="${INK}" stroke-width="4"/>`;
+  return `<g transform="translate(${cx} ${cy}) scale(${sc})">${p}
+    <circle r="22" fill="#e8892c" stroke="${INK}" stroke-width="4"/>
+    <circle cx="-7" cy="-5" r="3" fill="${INK}"/><circle cx="6" cy="-7" r="3" fill="${INK}"/><circle cx="2" cy="7" r="3" fill="${INK}"/></g>`;
+}
+function tomatoSVG(cx,cy,r=46){
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#d8473a" stroke="${INK}" stroke-width="4"/>
+    <ellipse cx="${cx-r*.4}" cy="${cy-r*.3}" rx="${r*.16}" ry="${r*.28}" fill="#fff" opacity=".45" transform="rotate(30 ${cx-r*.4} ${cy-r*.3})"/>
+    <path d="M${cx} ${cy-r+6} l-22 -4 l14 10 l-10 12 l18 -10 l18 10 l-10 -12 l14 -10Z" fill="#4f9a4f" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>`;
+}
+
+const ROOT_PATHS = [
+  'M300 552 C300 610 296 660 300 720 C302 752 298 776 300 792',
+  'M300 580 C268 600 236 615 208 650 C192 670 182 694 176 716',
+  'M300 592 C332 615 368 628 396 662 C410 680 420 702 424 726',
+  'M299 650 C276 668 258 696 252 742',
+  'M301 660 C326 682 340 712 344 756',
+  'M212 645 C198 650 184 650 168 642',
+  'M392 657 C406 660 420 659 436 650'
+];
+function rootsSVG(transform=''){
+  const t = transform ? ` transform="${transform}"` : '';
+  return `<g${t}>${ROOT_PATHS.map(d=>hitLine(d,40)).join('')}
+    ${ROOT_PATHS.map(d=>`<path d="${d}" fill="none" stroke="${INK}" stroke-width="15" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('')}
+    ${ROOT_PATHS.map(d=>`<path d="${d}" fill="none" stroke="#ead6ac" stroke-width="8" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('')}</g>`;
+}
+function soilSVG(){
+  let dots='';
+  [[60,600],[130,700],[460,610],[520,720],[90,780],[400,790],[540,630],[220,770],[30,680]]
+    .forEach(([x,y],i)=>dots+=`<ellipse cx="${x}" cy="${y}" rx="${10+i%3*4}" ry="${6+i%2*3}" fill="#8f6240"/>`);
+  return `<path d="M0 560 Q0 548 12 548 H588 Q600 548 600 560 V806 Q600 820 586 820 H14 Q0 820 0 806Z" fill="${'#a8774f'}" stroke="${INK}" stroke-width="4"/>
+    ${dots}
+    <path d="M4 552 Q30 534 50 552 Q75 532 100 552 Q128 536 150 552 Q178 532 205 552 Q232 536 255 552 Q282 532 310 552 Q338 536 360 552 Q388 532 412 552 Q440 536 462 552 Q490 532 515 552 Q542 536 565 552 Q585 538 596 552"
+      fill="#7fbf5f" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>`;
+}
+
+// Главное растение (помидор) в разрезе. viewBox 0 0 600 820.
+// mode: 'normal' — правильное; 'wrong' — с перепутанными частями (задание 6)
+function plantSVG(mode='normal'){
+  const g = (part, inner, extra='') => `<g class="part" data-part="${part}" ${extra}>${inner}</g>`;
+  const STEM = 'M300 548 C304 470 296 380 300 300 C303 230 298 180 300 150';
+  if(mode==='normal'){
+    const branches = ['M300 470 Q250 462 210 448','M300 500 Q350 495 392 478','M300 250 Q340 235 372 215','M300 205 Q265 195 238 180',
+                      'M300 380 Q370 362 430 318','M300 322 Q240 300 176 286'];
+    // семена в разрезанном плоде
+    let seeds='';
+    [30,150,270].forEach(a=>{
+      [-16,16].forEach(o=>{
+        const rad=(a+o)*Math.PI/180, x=165+Math.cos(rad)*23, y=330+Math.sin(rad)*23;
+        seeds+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="5.5" ry="8.5" transform="rotate(${a+o+90} ${x.toFixed(1)} ${y.toFixed(1)})" fill="#fff4c4" stroke="#8a6a2a" stroke-width="2.2"/>`;
+      });
+    });
+    return `<svg viewBox="0 0 600 820" width="100%" height="100%" overflow="visible">
+      ${soilSVG()}
+      ${g('root', rootsSVG())}
+      ${g('stem', hitLine(STEM,50)+line2(STEM,'#4f9a4f',15)+branches.map(d=>line2(d,'#4f9a4f',8)).join(''))}
+      ${g('leaf', leafSVG(210,448,88,410)+leafSVG(392,478,516,440)+leafSVG(372,215,482,178,44)+leafSVG(238,180,148,140,40))}
+      ${g('flower', flowerSVG(300,112))}
+      ${g('fruit', `<path d="M430 318 L438 322" stroke="${INK}" stroke-width="5"/>`+tomatoSVG(440,365)+
+          `<circle cx="165" cy="330" r="46" fill="#d8473a" stroke="${INK}" stroke-width="4"/>`)}
+      ${g('seeds', `<circle cx="165" cy="330" r="37" fill="#f6c3a0" stroke="#b9372c" stroke-width="3"/>
+          <path d="M165 330 L197 348 M165 330 L133 348 M165 330 L165 293" stroke="#d8473a" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="165" cy="330" r="8" fill="#d8473a"/>${seeds}`)}
+      <g class="fx"></g>
+    </svg>`;
+  }
+  // ---- перепутанное растение ----
+  const STEM_W = 'M300 640 C302 600 298 570 300 548 C304 470 296 380 300 300 C303 230 298 190 300 165';
+  const UNDER  = 'M300 548 C302 600 298 640 300 680';
+  return `<svg viewBox="0 0 600 820" width="100%" height="100%" overflow="visible">
+    ${soilSVG()}
+    ${g('stem', hitLine(STEM_W,50)+line2(UNDER,'#4f9a4f',15)+line2('M300 548 C304 470 296 380 300 300 C303 230 298 190 300 165','#4f9a4f',15)
+        +['M300 490 Q350 485 392 470','M300 260 Q260 245 228 225','M300 380 Q370 362 430 318','M300 600 Q250 610 205 630','M300 625 Q350 630 395 650'].map(d=>line2(d,'#4f9a4f',8)).join(''),
+        'data-ok="1"')}
+    ${g('leafok', leafSVG(392,470,516,440)+leafSVG(228,225,112,190,46), 'data-ok="1"')}
+    ${g('fruitok', `<path d="M430 318 L438 322" stroke="${INK}" stroke-width="5"/>`+tomatoSVG(440,365), 'data-ok="1"')}
+    ${g('leaves', leafSVG(205,630,90,660,46)+leafSVG(395,650,510,690,46), 'data-wrong="leaves"')}
+    ${g('flower', flowerSVG(300,722,.95), 'data-wrong="flower"')}
+    ${g('root', `<circle cx="300" cy="85" r="85" fill="#000" fill-opacity="0"/>`+rootsSVG('translate(300 168) scale(.58 -.58) translate(-300 -552)'), 'data-wrong="root"')}
+    <g class="fx"></g>
+  </svg>`;
+}
+
+// Маленькие картинки-примеры для карточки с объяснением (viewBox 0 0 240 200)
+function drop(x,y,s=1){ return `<path transform="translate(${x} ${y}) scale(${s})" d="M0 -14 C7 -5 10 1 10 6 A10 10 0 1 1 -10 6 C-10 1 -7 -5 0 -14Z" fill="#4aa3df" stroke="${INK}" stroke-width="3"/>`; }
+function miniSVG(part){
+  let c='';
+  if(part==='root') c = `<rect x="10" y="70" width="220" height="120" rx="16" fill="#a8774f" stroke="${INK}" stroke-width="4"/>
+      ${line2('M120 20 L120 72','#4f9a4f',10)}${line2('M120 72 C118 110 122 140 120 175 M120 95 C100 110 80 120 66 150 M120 100 C140 115 160 125 172 155','#ead6ac',7)}
+      ${drop(50,110)}${drop(190,120)}${drop(80,170)}${drop(170,175)}`;
+  if(part==='stem') c = `${line2('M120 190 L120 30','#4f9a4f',16)}
+      ${drop(120,150,1.1)}${drop(120,95,1.1)}
+      <path d="M170 160 L170 50 M155 70 L170 48 L185 70" fill="none" stroke="#4aa3df" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      ${leafSVG(120,60,40,30,40)}`;
+  if(part==='leaf') c = `<g transform="translate(185 50)"><g class="spin">${[0,45,90,135,180,225,270,315].map(a=>`<path d="M0 -40 L0 -52" transform="rotate(${a})" stroke="#e8a92c" stroke-width="6" stroke-linecap="round"/>`).join('')}</g>
+      <circle r="30" fill="#f2c14e" stroke="${INK}" stroke-width="4"/></g>
+      <path d="M160 75 L110 120" stroke="#f2c14e" stroke-width="6" class="beam"/>
+      ${leafSVG(30,185,150,105,80)}`;
+  if(part==='flower') c = `${flowerSVG(55,100,.8)}
+      <path d="M100 100 L140 100 M128 88 L142 100 L128 112" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      ${tomatoSVG(190,105,36)}`;
+  if(part==='fruit') c = `${tomatoSVG(70,110,48)}
+      <path d="M185 70 C160 50 132 68 136 104 C140 140 168 160 185 150 C202 160 230 140 234 104 C238 68 210 50 185 70Z" fill="#9ccc5a" stroke="${INK}" stroke-width="4"/>
+      <path d="M185 70 Q186 52 194 42" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  if(part==='seeds') c = `<rect x="0" y="140" width="240" height="60" rx="12" fill="#a8774f" stroke="${INK}" stroke-width="4"/>
+      <ellipse cx="50" cy="165" rx="14" ry="20" fill="#fff4c4" stroke="#8a6a2a" stroke-width="3"/>
+      <path d="M86 110 L126 110 M114 98 L128 110 L114 122" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      ${line2('M180 142 Q178 100 182 60','#4f9a4f',8)}${leafSVG(181,80,230,50,30)}${leafSVG(180,95,135,70,30)}`;
+  return `<svg class="mini" viewBox="0 0 240 200">${c}</svg>`;
+}
+
+// Иллюстрации продуктов (viewBox 0 0 140 110)
+function foodSVG(id){
+  const s = `stroke="${INK}" stroke-width="4" stroke-linejoin="round"`;
+  const pics = {
+    carrot: `<path d="M64 30 Q50 14 44 6 M70 30 Q70 12 72 4 M76 30 Q88 14 96 8" stroke="#3e7d43" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M48 32 Q70 22 92 32 L74 104 Q70 109 66 104Z" fill="#ee8a2f" ${s}/>
+      <path d="M58 52 L70 54 M78 68 L68 70 M62 84 L72 86" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`,
+    beet: `<path d="M62 34 Q46 10 34 8 Q44 30 62 36Z M76 34 Q92 10 106 8 Q96 30 76 36Z" fill="#6db35e" ${s}/>
+      <path d="M70 34 L70 18" stroke="#8e2c4f" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="70" cy="66" r="32" fill="#8e2c4f" ${s}/><path d="M70 98 Q72 104 70 108" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="58" cy="56" rx="6" ry="10" fill="#fff" opacity=".3"/>`,
+    lettuce: `<path d="M70 104 C30 100 10 70 22 40 C40 54 50 70 70 104Z" fill="#8cc46a" ${s}/>
+      <path d="M70 104 C110 100 130 70 118 40 C100 54 90 70 70 104Z" fill="#8cc46a" ${s}/>
+      <path d="M70 104 C44 80 40 40 70 10 C100 40 96 80 70 104Z" fill="#a6d77e" ${s}/>
+      <path d="M70 100 L70 26" stroke="#5a9a3c" stroke-width="4"/>`,
+    cabbage: `<circle cx="70" cy="58" r="44" fill="#c4e29a" ${s}/>
+      <path d="M38 30 Q60 50 50 98 M102 30 Q80 50 90 98 M70 14 Q78 50 70 102" fill="none" stroke="#6aa33f" stroke-width="4"/>
+      <path d="M26 58 Q40 40 70 46 Q100 40 114 58" fill="none" stroke="#6aa33f" stroke-width="4"/>`,
+    apple: `<path d="M70 30 C46 14 16 30 20 62 C24 94 50 108 70 98 C90 108 116 94 120 62 C124 30 94 14 70 30Z" fill="#d8473a" ${s}/>
+      <path d="M70 30 Q72 14 80 6" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M78 18 Q96 4 110 14 Q96 30 78 18Z" fill="#6db35e" ${s}/>
+      <ellipse cx="40" cy="52" rx="7" ry="13" fill="#fff" opacity=".4" transform="rotate(20 40 52)"/>`,
+    cucumber: `<rect x="12" y="38" width="116" height="40" rx="20" fill="#3f8a3a" ${s} transform="rotate(-15 70 58)"/>
+      <g fill="#a6d77e">${[[34,70],[52,58],[72,62],[92,48],[104,56],[60,74],[84,66]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.5"/>`).join('')}</g>`,
+    sunseeds: [[40,58,-30],[72,50,10],[102,62,40],[58,82,-10],[90,86,25]].map(([x,y,a])=>
+      `<g transform="translate(${x} ${y}) rotate(${a})"><path d="M0 -22 C12 -10 12 12 0 22 C-12 12 -12 -10 0 -22Z" fill="#2f2f36" ${s}/>
+       <path d="M-4 -14 L-4 14 M4 -14 L4 14" stroke="#e9e3d6" stroke-width="2.5"/></g>`).join(''),
+    peas: [[46,78],[70,82],[94,78],[58,58],[82,58],[70,36],[34,58],[106,58]].map(([x,y])=>
+      `<circle cx="${x}" cy="${y}" r="13" fill="#7cc05a" ${s}/><circle cx="${x-4}" cy="${y-4}" r="3.5" fill="#fff" opacity=".5"/>`).join('')
+  };
+  return `<svg viewBox="0 0 140 110">${pics[id]}</svg>`;
+}
+
+// Иконки частей растения для корзин
+function partIcon(part){
+  const ic = {
+    root:  `${line2('M26 6 L26 20','#4f9a4f',6)}${line2('M26 20 L26 46 M26 26 L12 42 M26 28 L40 42','#ead6ac',5)}`,
+    leaf:  leafSVG(8,44,46,8,30),
+    fruit: tomatoSVG(26,30,18),
+    seeds: `<ellipse cx="18" cy="28" rx="8" ry="13" fill="#fff4c4" stroke="${INK}" stroke-width="3" transform="rotate(-20 18 28)"/>
+            <ellipse cx="36" cy="26" rx="8" ry="13" fill="#fff4c4" stroke="${INK}" stroke-width="3" transform="rotate(20 36 26)"/>`
+  };
+  return `<svg viewBox="0 0 52 52">${ic[part]}</svg>`;
+}
+const CHECK = `<svg viewBox="0 0 40 40"><path d="M8 21 L17 30 L33 11" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// Растения для загадки (viewBox 0 0 300 400, земля с y=262)
+function smallPlant(kind){
+  const soil = `<rect x="-10" y="262" width="320" height="150" fill="#a8774f" stroke="${INK}" stroke-width="4"/>
+    <path d="M-6 266 Q20 250 40 266 Q65 250 90 266 Q115 250 140 266 Q165 250 190 266 Q215 250 240 266 Q265 250 290 266 Q300 258 310 266" fill="#7fbf5f" stroke="${INK}" stroke-width="4"/>`;
+  const R = (paths)=>`<g class="roots">${paths.map(d=>`<path pathLength="1" d="${d}" fill="none" stroke="${INK}" stroke-width="12" stroke-linecap="round"/>`).join('')}
+      ${paths.map(d=>`<path pathLength="1" d="${d}" fill="none" stroke="#ead6ac" stroke-width="6" stroke-linecap="round"/>`).join('')}</g>`;
+  const q = `<text class="qmark" x="150" y="350" text-anchor="middle" font-size="70" font-weight="900" fill="#f8f4ec" stroke="${INK}" stroke-width="3">?</text>`;
+  let body='', roots=[];
+  if(kind==='tree'){
+    body = `<path d="M138 264 L142 150 L158 150 L162 264Z" fill="#8a5a32" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="96" cy="120" r="50" fill="#5fa35a" stroke="${INK}" stroke-width="4"/>
+      <circle cx="204" cy="120" r="50" fill="#5fa35a" stroke="${INK}" stroke-width="4"/>
+      <circle cx="150" cy="86" r="66" fill="#6db35e" stroke="${INK}" stroke-width="4"/>
+      ${[[110,70],[178,58],[200,128],[96,132],[150,120]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="11" fill="#d8473a" stroke="${INK}" stroke-width="3"/>`).join('')}`;
+    roots = ['M150 266 C150 300 148 330 150 380','M150 270 C120 290 100 310 80 340','M150 270 C180 290 200 310 222 340','M150 300 C130 330 118 350 110 386','M150 300 C172 330 184 350 192 386'];
+  }
+  if(kind==='bush'){
+    const tips=[[80,140],[118,100],[150,88],[184,100],[222,140]];
+    body = tips.map(([x,y])=>line2(`M150 262 Q${(150+x)/2} ${200} ${x} ${y}`,'#8a5a32',5)).join('') +
+      [[80,135,34],[118,98,34],[150,80,34],[184,98,34],[222,135,34],[100,170,30],[200,170,30]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#6db35e" stroke="${INK}" stroke-width="4"/>`).join('') +
+      [[96,150],[106,160],[90,163],[176,110],[188,118],[172,124],[208,152],[220,160]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="7" fill="#c9483b" stroke="${INK}" stroke-width="2.5"/>`).join('');
+    roots = ['M150 266 C140 300 130 320 120 360','M150 266 C160 300 170 320 182 360','M150 266 C150 310 150 340 150 380','M150 270 C120 280 96 296 76 320','M150 270 C180 280 204 296 224 320'];
+  }
+  if(kind==='flower'){
+    let petals=''; for(let i=0;i<12;i++) petals+=`<ellipse cx="0" cy="-28" rx="9" ry="22" transform="rotate(${i*30})" fill="#fff" stroke="${INK}" stroke-width="3"/>`;
+    body = line2('M150 262 C152 200 148 150 150 100','#4f9a4f',8) + leafSVG(150,220,90,190,36) + leafSVG(150,190,212,160,36)
+      + `<g transform="translate(150 92)">${petals}<circle r="17" fill="#f2c14e" stroke="${INK}" stroke-width="3.5"/></g>`;
+    roots = ['M150 266 C150 290 148 310 150 340','M150 276 C134 290 124 300 116 320','M150 278 C166 292 176 302 184 322','M150 300 C140 316 136 326 134 340'];
+  }
+  if(kind==='grass'){
+    body = ['M150 262 Q120 180 70 140','M150 262 Q180 170 236 140','M150 262 Q132 190 112 100','M150 262 Q172 200 196 112'].map(d=>
+        `<path d="${d}" fill="none" stroke="${INK}" stroke-width="14" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#7fbf5f" stroke-width="7" stroke-linecap="round"/>`).join('')
+      + line2('M150 262 C152 200 150 120 156 60','#9fb14a',6)
+      + [0,1,2,3,4,5].map(i=>`<ellipse cx="${i%2?166:146}" cy="${50+i*14}" rx="9" ry="14" transform="rotate(${i%2?25:-25} ${i%2?166:146} ${50+i*14})" fill="#e3b44a" stroke="${INK}" stroke-width="3"/>`).join('');
+    roots = ['M150 266 C140 290 130 310 126 340','M150 266 C160 290 170 310 176 340','M150 266 C150 300 152 320 150 350','M150 268 C130 280 112 290 100 306','M150 268 C170 280 188 290 200 306','M146 270 C140 300 138 320 140 360'];
+  }
+  return `<svg viewBox="0 0 300 400" width="100%" height="100%">${soil}${q}${R(roots)}${body}</svg>`;
+}
+
+/* =====================================================================
+   5. ОБЩИЕ ИНСТРУМЕНТЫ
+   ===================================================================== */
+const $ = (sel, root=document) => root.querySelector(sel);
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+function el(tag, cls, style, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(style)e.style.cssText=style; if(html!=null)e.innerHTML=html; return e; }
+
+// Всплывающее сообщение
+let toastTimer;
+function toast(msg, type='', ms=2800){
+  const t = $('#toast');
+  const icon = type==='ok' ? `<svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="21" fill="#2f7d4f" stroke="${INK}" stroke-width="3"/><path d="M13 24 L20 31 L34 15" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+           : type==='no' ? `<svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="21" fill="#f2c14e" stroke="${INK}" stroke-width="3"/><text x="23" y="32" text-anchor="middle" font-size="28" font-weight="900" fill="${INK}">?</text></svg>`
+           : `<svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="21" fill="#f2c14e" stroke="${INK}" stroke-width="3"/><path d="M17 20 Q17 11 23 11 Q29 11 29 20 Q29 24 26 27 L26 31 L20 31 L20 27 Q17 24 17 20Z" fill="#fff" stroke="${INK}" stroke-width="2.5"/><path d="M20 35 L26 35" stroke="${INK}" stroke-width="3"/></svg>`;
+  t.innerHTML = icon + `<span>${msg}</span>`;
+  t.className = 'show ' + type;
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.className = type, ms);
+}
+
+/* Перетаскивание мышью и пальцем (Pointer Events).
+   onDrop(el, cx, cy) должен вернуть true, если карточка принята, иначе она плавно вернётся на место. */
+function makeDraggable(card, onDrop, onOver){
+  let pid = null, dx = 0, dy = 0;
+  card.addEventListener('pointerdown', e=>{
+    if(card.classList.contains('done') || pid!==null) return;
+    e.preventDefault();
+    pid = e.pointerId;
+    try{ card.setPointerCapture(pid); }catch(err){}
+    const p = toStage(e);
+    dx = p.x - parseFloat(card.style.left); dy = p.y - parseFloat(card.style.top);
+    card.classList.remove('back','shake','hint');
+    card.classList.add('dragging');
+    sfx.click();
+  });
+  card.addEventListener('pointermove', e=>{
+    if(e.pointerId!==pid) return;
+    const p = toStage(e);
+    // не даём унести карточку за пределы сцены
+    const x = Math.max(-40, Math.min(1600-card.offsetWidth+40, p.x-dx));
+    const y = Math.max(-20, Math.min(790-card.offsetHeight+40, p.y-dy));
+    card.style.left = x+'px'; card.style.top = y+'px';
+    onOver && onOver(card, x+card.offsetWidth/2, y+card.offsetHeight/2);
+  });
+  const end = (e, cancelled)=>{
+    if(e.pointerId!==pid) return;
+    pid = null;
+    card.classList.remove('dragging');
+    onOver && onOver(card, -999, -999);
+    const cx = parseFloat(card.style.left)+card.offsetWidth/2, cy = parseFloat(card.style.top)+card.offsetHeight/2;
+    if(cancelled || !onDrop(card, cx, cy)) sendHome(card);
+  };
+  card.addEventListener('pointerup', e=>end(e,false));
+  card.addEventListener('pointercancel', e=>end(e,true));
+  card.addEventListener('lostpointercapture', e=>{ if(e.pointerId===pid) end(e,false); });
+}
+function sendHome(card){
+  card.classList.add('back');
+  card.style.left = card.dataset.hx+'px'; card.style.top = card.dataset.hy+'px';
+  setTimeout(()=>card.classList.remove('back'), 550);
+}
+function setHome(card, x, y){ card.dataset.hx=x; card.dataset.hy=y; card.style.left=x+'px'; card.style.top=y+'px'; }
+const inside = (x,y,r,pad=0) => x>=r.x-pad && x<=r.x+r.w+pad && y>=r.y-pad && y<=r.y+r.h+pad;
+
+/* Мини-движок анимаций для эффектов на растении */
+let fxToken = 0;
+function anim(dur, step, delay=0){
+  const token = fxToken;
+  return new Promise(res=>{
+    const t0 = performance.now()+delay;
+    const f = now=>{
+      if(token!==fxToken) return res(false);
+      const t = (now-t0)/dur;
+      if(t<0){ requestAnimationFrame(f); return; }
+      step(Math.min(1,t));
+      if(t<1) requestAnimationFrame(f); else res(true);
+    };
+    requestAnimationFrame(f);
+  });
+}
+const NS='http://www.w3.org/2000/svg';
+function svgEl(parent, markup){ const g=document.createElementNS(NS,'g'); g.innerHTML=markup; parent.appendChild(g); return g; }
+// Двигает элемент по траектории d (капельки воды, пчела, семечко)
+function along(fx, d, markup, dur, delay=0, fade=true){
+  const path = document.createElementNS(NS,'path'); path.setAttribute('d',d); path.setAttribute('fill','none');
+  fx.appendChild(path);
+  const L = path.getTotalLength();
+  const obj = svgEl(fx, markup); obj.style.opacity = 0;
+  return anim(dur, t=>{
+    const p = path.getPointAtLength(t*L);
+    obj.setAttribute('transform',`translate(${p.x} ${p.y})`);
+    obj.style.opacity = !fade ? 1 : (t<.1 ? t*10 : t>.85 ? (1-t)/.15 : 1);
+  }, delay).then(r=>{ path.remove(); if(fade) obj.remove(); return obj; });
+}
+const DROP = `<path d="M0 -12 C6 -4 9 1 9 5 A9 9 0 1 1 -9 5 C-9 1 -6 -4 0 -12Z" fill="#4aa3df" stroke="${INK}" stroke-width="2.5"/>`;
+
+/* =====================================================================
+   6. НАВИГАЦИЯ
+   ===================================================================== */
+const screens = [...document.querySelectorAll('.screen')];
+let cur = 0;
+const builders = {}; // функции построения экранов (по номеру)
+const hints = {};    // функции подсказок (по номеру)
+
+function go(n){
+  if(n<0 || n>=screens.length) return;
+  fxToken++;
+  sfx.click();
+  screens.forEach((s,i)=>s.classList.toggle('active', i===n));
+  cur = n;
+  $('#counter').textContent = `${n+1} / ${screens.length}`;
+  $('#prevBtn').style.visibility = n===0 ? 'hidden':'visible';
+  $('#nextBtn').style.visibility = n===screens.length-1 ? 'hidden':'visible';
+  $('#nextBtn').classList.remove('glow');
+  $('#toast').className='';
+  if(n===7) showFinal(); else stopConfetti();
+  if(n===2 && done.explore) $('#nextBtn').classList.add('glow');
+}
+function resetTask(){ fxToken++; sfx.click(); builders[cur] && builders[cur](); $('#nextBtn').classList.remove('glow'); }
+function hint(){ hints[cur] && hints[cur](); }
+function restartAll(){
+  Object.keys(done).forEach(k=>done[k]=false);
+  Object.values(builders).forEach(b=>b());
+  go(0);
+}
+function taskDone(key, msg){
+  if(!done[key]){ done[key]=true; }
+  sfx.win(); burst();
+  toast(msg,'ok',4000);
+  $('#nextBtn').classList.add('glow');
+}
+
+// Во весь экран
+function toggleFullscreen(){
+  const d=document;
+  if(!d.fullscreenElement && !d.webkitFullscreenElement){
+    (d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen).call(d.documentElement);
+  } else (d.exitFullscreen||d.webkitExitFullscreen).call(d);
+}
+// Панель учителя
+function toggleTeacher(){
+  const t=$('#teacher');
+  if(!t.classList.contains('show')){
+    $('#teacherGrid').innerHTML='';
+    screens.forEach((s,i)=>{
+      const b=el('button','btn',null,`<b style="min-width:44px">${i+1}.</b> ${s.dataset.name.replace(/^\d+\.\s*/,'')}`);
+      b.onclick=()=>{ t.classList.remove('show'); go(i); };
+      $('#teacherGrid').appendChild(b);
+    });
+  }
+  t.classList.toggle('show');
+}
+addEventListener('keydown', e=>{
+  if(e.code==='KeyT') toggleTeacher();
+  else if(e.code==='Escape') $('#teacher').classList.remove('show');
+  else if(e.code==='ArrowRight' || e.code==='PageDown') go(cur+1);
+  else if(e.code==='ArrowLeft' || e.code==='PageUp') go(cur-1);
+  else if(e.code==='KeyF') toggleFullscreen();
+});
+
+/* =====================================================================
+   7. ЭКРАН 0 — ТИТУЛ
+   ===================================================================== */
+$('#titlePlant').innerHTML = plantSVG('normal');
+$('#titlePlant').classList.add('static');
+putMascot($('#titleMascot'),'wave');
+
+/* =====================================================================
+   8. ЭКРАН 1 — ЗАГАДКА «Чем они похожи?»
+   ===================================================================== */
+builders[1] = function(){
+  const box = $('#riddleCards'); box.innerHTML=''; box.classList.remove('revealed');
+  [['tree','Дерево'],['bush','Кустарник'],['flower','Цветок'],['grass','Трава']].forEach(([k,name],i)=>{
+    const c = el('div','pcard',`left:${60+i*375}px;top:110px;width:340px;height:440px`);
+    c.innerHTML = `<div style="position:absolute;left:10px;top:6px;width:316px;height:360px">${smallPlant(k)}</div>
+      <div class="lbl"><span class="pill" style="font-size:32px">${name}</span></div>`;
+    box.appendChild(c);
+  });
+  putMascot($('#riddleMascot'),'talk');
+  $('#riddleBubble').innerHTML = 'Посмотри: дерево, кустарник, цветок и трава. Они такие разные!<br><b>Что есть у каждого из них?</b>';
+  const btn = $('#riddleBtn'); btn.style.display=''; btn.classList.add('glow');
+};
+$('#riddleBtn').onclick = function(){
+  sfx.open();
+  $('#riddleCards').classList.add('revealed');
+  document.querySelectorAll('#riddleCards .pcard').forEach(c=>c.classList.add('revealed'));
+  putMascot($('#riddleMascot'),'point');
+  const b=$('#riddleBubble');
+  b.innerHTML = 'Смотри: у всех есть <b>корень</b>, <b>стебель</b> и <b>листья</b>! А ещё бывают цветки, плоды и семена. Рассмотрим растение поближе!';
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  this.style.display='none';
+  $('#nextBtn').classList.add('glow');
+};
+
+/* =====================================================================
+   9. ЭКРАН 2 — ИЗУЧАЕМ ЧАСТИ РАСТЕНИЯ
+   ===================================================================== */
+let opened;
+builders[2] = function(){
+  opened = new Set();
+  const L = $('#s2 .layer'); L.innerHTML='';
+  // растение (s=0.82)
+  const plant = el('div','plant interactive','left:130px;top:108px;width:492px;height:672px', plantSVG('normal'));
+  L.appendChild(plant);
+  // карточка объяснения
+  const info = el('div','info','left:690px;top:118px;width:870px;height:370px');
+  info.innerHTML = `<div style="font-size:44px;font-weight:900;line-height:1.3">Нажми на любую<br>часть растения —<br><span class="o">узнаешь, зачем она нужна!</span></div>
+    <svg viewBox="0 0 120 120" style="width:150px;height:150px;margin-left:auto">
+    <path d="M110 48 L50 48 L50 22 L8 60 L50 98 L50 72 L110 72Z" fill="#d9703a" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/></svg>`;
+  L.appendChild(info);
+  // фишки прогресса
+  const chips = el('div','chips','left:690px;top:510px');
+  PART_ORDER.forEach(p=>chips.appendChild(el('div','chip',null,PARTS[p].name)).dataset.p=p);
+  L.appendChild(chips);
+  // персонаж
+  const m = el('div','mascot','left:700px;top:590px;width:126px;height:190px'); putMascot(m,'happy'); L.appendChild(m);
+  const bub = el('div','bubble tl','left:860px;top:600px;width:700px;min-height:150px',
+    'Растение — как домик из частей. Давай откроем <b>все 6 частей</b>!');
+  L.appendChild(bub);
+  $('#exploreCount').textContent='Открыто 0 из 6';
+
+  plant.querySelectorAll('.part').forEach(g=>{
+    g.addEventListener('click', ()=>openPart(g.dataset.part));
+  });
+
+  function openPart(p){
+    sfx.open();
+    plant.querySelectorAll('.part').forEach(g=>g.classList.toggle('active', g.dataset.part===p));
+    plant.querySelector(`[data-part="${p}"]`).classList.add('opened');
+    info.innerHTML = `<div style="flex:1"><div class="name" style="color:${PARTS[p].color}">${PARTS[p].name}</div>
+      <div class="txt">${PARTS[p].text}</div></div>${miniSVG(p)}`;
+    info.classList.remove('pop'); void info.offsetWidth; info.classList.add('pop');
+    opened.add(p);
+    const chip = chips.querySelector(`[data-p="${p}"]`); chip.classList.add('on'); chip.style.background=PARTS[p].color;
+    $('#exploreCount').textContent = `Открыто ${opened.size} из 6`;
+    playFx(plant, p);
+    if(opened.size===6 && !bub.dataset.fin){
+      bub.dataset.fin = 1;
+      putMascot(m,'wave');
+      bub.innerHTML = 'Вывод: у всех растений есть <b>корень, стебель, листья, цветки, плоды с семенами</b>!';
+      bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
+      setTimeout(()=>taskDone('explore','Все части открыты! Молодцы!'), 600);
+    } else if(!bub.dataset.fin){
+      putMascot(m,'talk');
+      bub.innerHTML = opened.size<6 ? `Отлично! Осталось открыть ещё <b>${6-opened.size}</b>.` : bub.innerHTML;
+    }
+  }
+};
+hints[2] = function(){
+  const left = PART_ORDER.filter(p=>!opened.has(p));
+  if(!left.length){ toast('Все части уже открыты!','ok'); return; }
+  const p = left[Math.floor(Math.random()*left.length)];
+  const g = $(`#s2 [data-part="${p}"]`);
+  g.classList.remove('hint'); void g.getBBox(); g.classList.add('hint');
+  setTimeout(()=>g.classList.remove('hint'), 2800);
+  toast('Нажми на часть, которая мигает!');
+};
+
+// Анимации на растении при открытии части
+function playFx(plant, p){
+  fxToken++;
+  const fx = plant.querySelector('.fx'); fx.innerHTML='';
+  if(p==='root'){
+    const paths = ['M140 700 C190 690 200 670 210 650 C240 615 280 600 300 585 L300 220',
+                   'M470 720 C430 700 420 690 400 662 C370 628 330 610 300 592 L300 220',
+                   'M300 805 L300 220',
+                   'M220 790 C240 760 250 745 252 742 C258 696 276 668 299 650 L300 220'];
+    for(let k=0;k<2;k++) paths.forEach((d,i)=>along(fx,d,DROP,2600,i*350+k*1500));
+  }
+  if(p==='stem'){
+    const paths = ['M300 548 L300 470 Q250 462 210 448 L120 420','M300 548 L300 500 Q350 495 392 478 L490 450',
+                   'M300 548 L300 250 Q340 235 372 215 L450 190','M300 548 L300 140','M300 548 L300 380 Q370 362 430 318'];
+    for(let k=0;k<2;k++) paths.forEach((d,i)=>along(fx,d,DROP,2200,i*250+k*1400));
+  }
+  if(p==='leaf'){
+    const sun = svgEl(fx, `<g transform="translate(530 60)"><g class="spin">${[0,45,90,135,180,225,270,315].map(a=>`<path d="M0 -44 L0 -60" transform="rotate(${a})" stroke="#e8a92c" stroke-width="7" stroke-linecap="round"/>`).join('')}</g>
+      <circle r="34" fill="#f2c14e" stroke="${INK}" stroke-width="4"/><circle cx="-10" cy="-4" r="3.5" fill="${INK}"/><circle cx="10" cy="-4" r="3.5" fill="${INK}"/><path d="M-10 8 Q0 16 10 8" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/></g>
+      ${[[150,429],[454,459],[427,196],[193,160]].map(([x,y])=>`<path d="M520 90 L${x} ${y}" stroke="#f2c14e" stroke-width="7" stroke-linecap="round" class="beam" opacity=".9"/>`).join('')}`);
+    sun.style.opacity=0; anim(500,t=>sun.style.opacity=t);
+  }
+  if(p==='flower'){
+    const bee = `<g><ellipse rx="16" ry="11" fill="#f2c14e" stroke="${INK}" stroke-width="3"/><path d="M-4 -10 L-4 10 M5 -10 L5 10" stroke="${INK}" stroke-width="4"/>
+      <ellipse cx="-2" cy="-16" rx="9" ry="7" fill="#fff" stroke="${INK}" stroke-width="2.5" opacity=".9"/><circle cx="14" cy="-2" r="2.5" fill="${INK}"/></g>`;
+    const loop = 'M520 40 C440 10 380 30 360 80 C340 130 260 140 240 100 C220 60 280 20 330 60 C380 100 460 120 560 60';
+    along(fx, loop, bee, 4000, 0);
+  }
+  if(p==='fruit'){
+    const star = (x,y)=>`<path transform="translate(${x} ${y})" d="M0 -14 L4 -4 L14 0 L4 4 L0 14 L-4 4 L-14 0 L-4 -4Z" fill="#f2c14e" stroke="${INK}" stroke-width="2"/>`;
+    [[500,320],[500,410],[385,330],[110,280],[215,300],[440,300]].forEach(([x,y],i)=>{
+      const s = svgEl(fx, star(0,0)); s.style.opacity=0;
+      anim(700,t=>{ const k=Math.sin(t*Math.PI); s.setAttribute('transform',`translate(${x} ${y}) scale(${.3+k})`); s.style.opacity=k; }, i*200)
+        .then(()=>anim(700,t=>{ const k=Math.sin(t*Math.PI); s.setAttribute('transform',`translate(${x} ${y}) scale(${.3+k})`); s.style.opacity=k; }, 300));
+    });
+  }
+  if(p==='seeds'){
+    const seed = `<ellipse rx="8" ry="12" fill="#fff4c4" stroke="#8a6a2a" stroke-width="3"/>`;
+    along(fx, 'M165 345 Q110 420 70 540 L70 590', seed, 1400, 300).then(ok=>{
+      if(!ok) return;
+      const sp = svgEl(fx, `${line2('M0 0 Q-3 -30 2 -60','#4f9a4f',7)}${leafSVG(1,-44,44,-70,30)}${leafSVG(0,-36,-40,-58,30)}`);
+      anim(1300,t=>sp.setAttribute('transform',`translate(70 552) scale(${t})`));
+    });
+  }
+}
+
+/* =====================================================================
+   10. ПОДПИСИ ВОКРУГ РАСТЕНИЯ (экраны 3 и 4)
+   ===================================================================== */
+// Точки на рисунке (в координатах 600×820), куда ведут линии-выноски
+const ANCHOR = {seeds:[150,335], leaf:[128,428], root:[252,705], flower:[342,112], fruit:[472,352], stem:[306,520]};
+
+// Строит растение, линии и прямоугольники-зоны; возвращает массив зон со координатами
+function buildLabels(layer, cfg){
+  const {px,py,s,zw,zh,lx,rx,zones} = cfg;
+  layer.appendChild(el('div','plant static',`left:${px}px;top:${py}px;width:${600*s}px;height:${820*s}px`, plantSVG('normal')));
+  const lines = document.createElementNS(NS,'svg');
+  lines.setAttribute('width',1600); lines.setAttribute('height',790);
+  lines.style.cssText='position:absolute;left:0;top:0;pointer-events:none;overflow:visible';
+  layer.appendChild(lines);
+  return zones.map(z=>{
+    const x = z.side==='L' ? lx : rx, y = z.cy - zh/2;
+    const ax = px + ANCHOR[z.part][0]*s, ay = py + ANCHOR[z.part][1]*s;
+    const sx = z.side==='L' ? x+zw : x;
+    lines.innerHTML += `<path d="M${sx} ${z.cy} L${ax} ${ay}" stroke="${INK}" stroke-width="4" stroke-dasharray="${cfg.dashed?'10 8':'0'}"/>
+      <circle cx="${ax}" cy="${ay}" r="9" fill="#fff" stroke="${INK}" stroke-width="4"/>`;
+    const div = el('div', 'zone', `left:${x}px;top:${y}px;width:${zw}px;height:${zh}px`);
+    layer.appendChild(div);
+    return {part:z.part, x, y, w:zw, h:zh, div};
+  });
+}
+
+// ---- Экран 3: опорная схема ----
+builders[3] = function(){
+  const L = $('#s3 .layer'); L.innerHTML='';
+  const zones = buildLabels(L, {px:566, py:112, s:.78, zw:300, zh:96, lx:170, rx:1130,
+    zones:[{part:'seeds',side:'L',cy:290},{part:'leaf',side:'L',cy:450},{part:'root',side:'L',cy:650},
+           {part:'flower',side:'R',cy:200},{part:'fruit',side:'R',cy:380},{part:'stem',side:'R',cy:560}]});
+  zones.forEach((z,i)=>{
+    z.div.className='zone label pop'; z.div.style.background=PARTS[z.part].color;
+    z.div.style.animationDelay = (i*.12)+'s';
+    z.div.textContent = PARTS[z.part].name;
+  });
+  const m = el('div','mascot','left:1450px;top:600px;width:120px;height:180px'); putMascot(m,'point'); L.appendChild(m);
+};
+
+// ---- Экран 4: подпиши растение ----
+let labelLeft;
+builders[4] = function(){
+  const L = $('#s4 .layer'); L.innerHTML='';
+  const zones = buildLabels(L, {px:608, py:110, s:.64, zw:280, zh:90, lx:250, rx:1070, dashed:true,
+    zones:[{part:'seeds',side:'L',cy:250},{part:'leaf',side:'L',cy:390},{part:'root',side:'L',cy:560},
+           {part:'flower',side:'R',cy:190},{part:'fruit',side:'R',cy:330},{part:'stem',side:'R',cy:470}]});
+  zones.forEach(z=>z.div.textContent='?');
+  labelLeft = 6;
+  $('#labelCount').textContent='0 из 6';
+  // карточки внизу (в случайном порядке)
+  shuffle(PART_ORDER).forEach((p,i)=>{
+    const c = el('div','card',`width:220px;height:92px`, PARTS[p].name);
+    c.dataset.part = p;
+    setHome(c, 80+i*244, 672);
+    L.appendChild(c);
+    makeDraggable(c, (card,cx,cy)=>{
+      const z = zones.find(z=>!z.filled && inside(cx,cy,z,24));
+      if(!z) return false;
+      if(z.part===card.dataset.part){
+        z.filled = true;
+        z.div.className='zone filled pop'; z.div.innerHTML = CHECK + PARTS[z.part].name;
+        card.remove(); sfx.ok();
+        labelLeft--; $('#labelCount').textContent=`${6-labelLeft} из 6`;
+        if(labelLeft===0) taskDone('label','Ура! Все части растения подписаны!');
+        else toast(`Верно! Это ${PARTS[z.part].name.toLowerCase()}.`,'ok',1800);
+        return true;
+      }
+      sfx.no(); card.classList.add('shake');
+      toast(`Почти! ${PARTS[card.dataset.part].hint}`,'no',3200);
+      return false;
+    }, (card,cx,cy)=>zones.forEach(z=>z.div.classList.toggle('over', !z.filled && inside(cx,cy,z,24))));
+  });
+  hints[4] = function(){
+    const cards=[...L.querySelectorAll('.card')];
+    if(!cards.length) return;
+    const c = cards[Math.floor(Math.random()*cards.length)];
+    const z = zones.find(z=>z.part===c.dataset.part);
+    [c,z.div].forEach(e=>{ e.classList.remove('hint'); void e.offsetWidth; e.classList.add('hint'); setTimeout(()=>e.classList.remove('hint'),2500); });
+    toast(`Подсказка: ${PARTS[c.dataset.part].hint}`);
+  };
+};
+
+/* =====================================================================
+   11. ЭКРАН 5 — «ЧТО МЫ ЕДИМ?»
+   ===================================================================== */
+builders[5] = function(){
+  const L = $('#s5 .layer'); L.innerHTML='';
+  let left = FOODS.length;
+  $('#eatCount').textContent='0 из 8';
+  // корзины
+  const baskets = BASKETS.map((p,i)=>{
+    const x = 40+i*390, y = 330, w = 350, h = 440;
+    const b = el('div','basket',`left:${x}px;top:${y}px;width:${w}px;height:${h}px`,
+      `<div class="bhead" style="background:${PARTS[p].color}">${partIcon(p)}${PARTS[p].name}</div><div class="weave"></div>`);
+    L.appendChild(b);
+    return {part:p, x, y, w, h, div:b, n:0};
+  });
+  // карточки продуктов
+  shuffle(FOODS).forEach((f,i)=>{
+    const c = el('div','card food',null, foodSVG(f.id)+`<div>${f.name}</div>`);
+    c.dataset.id = f.id;
+    setHome(c, 43+i*192, 118);
+    L.appendChild(c);
+    makeDraggable(c, (card,cx,cy)=>{
+      const b = baskets.find(b=>inside(cx,cy,b,10));
+      if(!b) return false;
+      if(b.part===f.basket){
+        // кладём в корзину: 2 места рядом
+        card.classList.add('done');
+        card.style.left = (b.x+8+b.n*167)+'px'; card.style.top = (b.y+100+ (b.n%2)*20)+'px';
+        card.classList.add('pop');
+        b.n++; left--; sfx.ok();
+        $('#eatCount').textContent=`${8-left} из 8`;
+        if(left===0) taskDone('eat','Все продукты в своих корзинах! Отлично!');
+        else toast(`Верно! ${f.name} — это ${f.basket==='seeds'?'семена':PARTS[f.basket].name.toLowerCase()}.`,'ok',1800);
+        return true;
+      }
+      sfx.no(); card.classList.add('shake');
+      toast(`Подумай ещё! ${f.hint}`,'no',3500);
+      return false;
+    }, (card,cx,cy)=>baskets.forEach(b=>b.div.classList.toggle('over', inside(cx,cy,b,10))));
+  });
+  hints[5] = function(){
+    const cards=[...L.querySelectorAll('.card:not(.done)')];
+    if(!cards.length) return;
+    const c = cards[Math.floor(Math.random()*cards.length)];
+    const f = FOODS.find(f=>f.id===c.dataset.id);
+    const b = baskets.find(b=>b.part===f.basket);
+    [c,b.div].forEach(e=>{ e.classList.remove('hint'); void e.offsetWidth; e.classList.add('hint'); setTimeout(()=>e.classList.remove('hint'),2500); });
+    toast(`${f.name}: ${f.hint}`);
+  };
+};
+
+/* =====================================================================
+   12. ЭКРАН 6 — «НАЙДИ ОШИБКУ»
+   ===================================================================== */
+builders[6] = function(){
+  const L = $('#s6 .layer'); L.innerHTML='';
+  const found = new Set();
+  $('#errCount').textContent='Найдено 0 из 3';
+  const plant = el('div','plant interactive','left:150px;top:110px;width:480px;height:656px', plantSVG('wrong'));
+  L.appendChild(plant);
+  // правая колонка: персонаж + список ошибок
+  const m = el('div','mascot','left:700px;top:120px;width:126px;height:190px'); putMascot(m,'talk'); L.appendChild(m);
+  const bub = el('div','bubble tl','left:860px;top:120px;width:700px;min-height:170px',
+    'Ой! Кто-то перепутал части растения. <b>Найди и нажми на 3 ошибки!</b>');
+  L.appendChild(bub);
+  const list = el('div','errs','left:700px;top:340px;width:860px');
+  ['flower','root','leaves'].forEach((k,i)=>{
+    const e = el('div','err',null,`<div class="num">${i+1}</div><div>Ошибка не найдена</div>`); e.dataset.k=k; list.appendChild(e);
+  });
+  L.appendChild(list);
+  const fx = plant.querySelector('.fx');
+
+  plant.querySelectorAll('.part').forEach(g=>g.addEventListener('click', ()=>{
+    const k = g.dataset.wrong;
+    if(!k){ sfx.no(); toast('Здесь всё правильно! Ищи дальше.','no',2000); return; }
+    if(found.has(k)) return;
+    found.add(k); sfx.ok();
+    // обводим ошибку красным кругом
+    const bb = g.getBBox();
+    svgEl(fx, `<ellipse cx="${bb.x+bb.width/2}" cy="${bb.y+bb.height/2}" rx="${bb.width/2+26}" ry="${bb.height/2+22}" fill="none" stroke="#c9483b" stroke-width="8" stroke-dasharray="1" pathLength="1" style="stroke-dashoffset:1;transition:stroke-dashoffset .6s" class="ring"/>`);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>fx.querySelectorAll('.ring').forEach(r=>r.style.strokeDashoffset=0)));
+    const row = list.querySelector(`[data-k="${k}"]`);
+    const idx = [...found].length;
+    row.className='err found pop';
+    row.innerHTML = `<div class="num">${CHECK}</div><div><b>${MISTAKE_TITLES[k]}.</b> ${MISTAKES[k]}</div>`;
+    list.appendChild(row); // найденные — по порядку сверху
+    list.querySelectorAll('.err:not(.found)').forEach((r,i)=>{ list.appendChild(r); r.querySelector('.num').textContent = idx+i+1; });
+    $('#errCount').textContent=`Найдено ${found.size} из 3`;
+    bub.innerHTML = MISTAKES[k];
+    if(found.size===3){
+      putMascot(m,'wave');
+      bub.innerHTML = 'Все ошибки найдены! Корень — <b>в земле</b>, листья и цветок — <b>над землёй</b>.';
+      taskDone('mistakes','Молодцы! Все 3 ошибки найдены!');
+    }
+    bub.classList.remove('pop'); void bub.offsetWidth; bub.classList.add('pop');
+  }));
+  hints[6] = function(){
+    const k = ['flower','root','leaves'].find(k=>!found.has(k));
+    if(!k){ toast('Все ошибки уже найдены!','ok'); return; }
+    const g = plant.querySelector(`[data-wrong="${k}"]`);
+    g.classList.remove('hint'); void g.getBBox(); g.classList.add('hint');
+    setTimeout(()=>g.classList.remove('hint'),2800);
+    toast('Посмотри внимательно на то, что мигает. Так бывает?');
+  };
+};
+
+/* =====================================================================
+   13. ЭКРАН 7 — ФИНАЛ + КОНФЕТТИ
+   ===================================================================== */
+putMascot($('#finalMascot'),'wave');
+function showFinal(){
+  const n = Object.values(done).filter(Boolean).length;
+  $('#stats').innerHTML = `<div class="bigscore">Выполнено: <span class="o">${n} из 4</span></div>` +
+    Object.keys(done).map(k=>`<div class="row"><div class="ico ${done[k]?'yes':'no'}">${done[k]?CHECK:''}</div>${TASK_NAMES[k]}</div>`).join('');
+  sfx.win(); startConfetti();
+}
+const cv = $('#confetti'), cx2 = cv.getContext('2d');
+let conf = [], confRun = false, confEnd = 0;
+const CONF_COLORS = ['#d9703a','#c9483b','#47698c','#2f7d4f','#f2c14e','#6db35e'];
+function spawnConfetti(n, x, y, spread){
+  for(let i=0;i<n;i++) conf.push({x:x+(Math.random()-.5)*spread, y:y+(Math.random()-.5)*40, vx:(Math.random()-.5)*10, vy:-Math.random()*12-4,
+    r:Math.random()*Math.PI, vr:(Math.random()-.5)*.3, w:12+Math.random()*10, h:8+Math.random()*6, c:CONF_COLORS[i%CONF_COLORS.length]});
+}
+function startConfetti(){ conf=[]; spawnConfetti(160, 800, 300, 1400); confEnd = performance.now()+3500; runConfetti(); }
+function burst(){ spawnConfetti(70, 800, 380, 500); confEnd = Math.max(confEnd, performance.now()+400); runConfetti(); }
+function stopConfetti(){ conf=[]; }
+function runConfetti(){
+  if(confRun) return; confRun = true;
+  const step = now=>{
+    cx2.clearRect(0,0,1600,900);
+    if(now<confEnd && cur===7 && Math.random()<.5) spawnConfetti(3, Math.random()*1600, -20, 10);
+    conf.forEach(p=>{ p.vy+=.35; p.vx*=.99; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+      cx2.save(); cx2.translate(p.x,p.y); cx2.rotate(p.r); cx2.fillStyle=p.c; cx2.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2))); cx2.restore(); });
+    conf = conf.filter(p=>p.y<950);
+    if(conf.length) requestAnimationFrame(step); else { confRun=false; cx2.clearRect(0,0,1600,900); }
+  };
+  requestAnimationFrame(step);
+}
+
+/* =====================================================================
+   14. ЗАПУСК
+   ===================================================================== */
+drawSoundBtn();
+Object.values(builders).forEach(b=>b());
+go(0);
+</script>
+</body>
+</html>
